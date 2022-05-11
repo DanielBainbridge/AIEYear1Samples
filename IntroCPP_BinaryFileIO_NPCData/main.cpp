@@ -61,13 +61,14 @@ int main(int argc, char* argv[])
             currentRecord = data.GetRecord(currentRecordIdx);
             recordTexture = LoadTextureFromImage(currentRecord->image);
         }
-
+        //throwing out of range exception
         if (IsKeyPressed(KEY_RIGHT))
         {
             currentRecordIdx++;
             if (currentRecordIdx >= data.GetRecordCount())
             {
-                currentRecordIdx = data.GetRecordCount();
+                //stops out of bounds exception
+                currentRecordIdx = data.GetRecordCount() - 1;
             }
             currentRecord = data.GetRecord(currentRecordIdx);
             recordTexture = LoadTextureFromImage(currentRecord->image);
