@@ -70,7 +70,8 @@ void DataFile::Load(string filename)
 
 	//basic idea create load record function, find total amount of records, if record is in range of total records then load that specific record.
 	//or that is dumb and i need to find a way to make the loading process faster for every piece in the data file.
-
+	//required: delete vector, only load the required record
+	//use Seekg for read move load function to real time/
 	for (int i = 0; i < recordCount; i++)
 	{		
 		int nameSize = 0;
@@ -89,7 +90,7 @@ void DataFile::Load(string filename)
 		infile.read(imgdata, imageSize);
 
 		Image img = LoadImageEx((Color*)imgdata, width, height);
-		//initialise character array as 0 values with one extra value to add the null value to cut the string off
+		//initialise character array as \0 values with one extra value to add the null value to cut the string off
 		char* name = new char[nameSize + 1] {};
 		int age = 0;
 				
