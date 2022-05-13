@@ -33,10 +33,11 @@ int main(int argc, char* argv[])
 
     DataFile data;
     int currentRecordIdx = 0;
+    int recordOffset = 0;
 
     data.Load("npc_data.dat");
 
-    DataFile::Record* currentRecord = data.GetRecord(currentRecordIdx);
+    DataFile::Record* currentRecord = data.GetRecord(currentRecordIdx, "npc_data.dat");
     Texture2D recordTexture = LoadTextureFromImage(currentRecord->image);
 
 
@@ -53,24 +54,26 @@ int main(int argc, char* argv[])
 
         if (IsKeyPressed(KEY_LEFT))
         {
-            currentRecordIdx--;
-            if (currentRecordIdx < 0)
+            recordOffset--;
+            if (recordOffset < 0)
             {
-                currentRecordIdx = 0;
+                recordOffset = 0;
+                recordOffset = 0;
             }
-            currentRecord = data.GetRecord(currentRecordIdx);
+            currentRecord = data.GetRecord(recordOffset, "npc_data.dat");
             recordTexture = LoadTextureFromImage(currentRecord->image);
         }
         //throwing out of range exception
         if (IsKeyPressed(KEY_RIGHT))
         {
-            currentRecordIdx++;
-            if (currentRecordIdx >= data.GetRecordCount())
+            recordOffset++;
+            if (recordOffset >= data.GetRecordCount())
             {
+                recordOffset = data.GetRecordCount() - 1;
                 //stops out of bounds exception
-                currentRecordIdx = data.GetRecordCount() - 1;
+                recordOffset = data.GetRecordCount() - 1;
             }
-            currentRecord = data.GetRecord(currentRecordIdx);
+            currentRecord = data.GetRecord(recordOffset, "npc_data.dat");
             recordTexture = LoadTextureFromImage(currentRecord->image);
         }
 

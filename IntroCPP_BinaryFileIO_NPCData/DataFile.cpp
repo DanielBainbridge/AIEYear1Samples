@@ -6,7 +6,7 @@ DataFile::DataFile()
 {
 	recordCount = 0;
 }
-
+//when a datafile is destroyed it will run the clear function to regain memory
 DataFile::~DataFile()
 {
 	Clear();
@@ -25,9 +25,51 @@ void DataFile::AddRecord(string imageFilename, string name, int age)
 	recordCount++;
 }
 
-DataFile::Record* DataFile::GetRecord(int index)
+DataFile::Record* DataFile::GetRecord(int offset, string filename)
 {
-	return records[index];
+	//return records[offset];
+	
+	//find total space that one record takes up,
+	//get index of the record
+	//offset by record multiplied by total space using seekg
+	//read file for things here-----------------
+
+	ifstream infile(filename, ios::binary);
+	int nameSize = 0;
+	int ageSize = 0;
+	int width = 0, height = 0, imageSize = 0;
+	offset *= sizeofrecord;
+
+	infile.seekg(offset + sizeof(recordCount), std::ios::beg);
+
+	infile.read((char*)&width, sizeof(int));
+	infile.read((char*)&height, sizeof(int));
+
+	imageSize = sizeof(Color) * width * height;
+
+	infile.read((char*)&nameSize, sizeof(int));
+	infile.read((char*)&ageSize, sizeof(int));
+
+	char* imgdata = new char[imageSize];
+	infile.read(imgdata, imageSize);
+
+	Image img = LoadImageEx((Color*)imgdata, width, height);
+	//initialise character array as \0 values with one extra value to add the null value to cut the string off
+	char* name = new char[nameSize + 1]{};
+	int age = 0;
+
+	infile.read((char*)name, nameSize);
+	infile.read((char*)&age, ageSize);
+
+	Record* r = new Record();
+	r->image = img;
+	r->name = string(name);
+	r->age = age;
+	return r;
+
+	delete[] imgdata;
+	delete[] name;
+	infile.close();
 }
 
 void DataFile::Save(string filename)
@@ -38,16 +80,16 @@ void DataFile::Save(string filename)
 	outfile.write((char*)&recordCount, sizeof(int));
 
 	for (int i = 0; i < recordCount; i++)
-	{		
+	{
 		Color* imgdata = GetImageData(records[i]->image);
-				
+
 		int imageSize = sizeof(Color) * records[i]->image.width * records[i]->image.height;
 		int nameSize = records[i]->name.length();
 		int ageSize = sizeof(int);
 
 		outfile.write((char*)&records[i]->image.width, sizeof(int));
 		outfile.write((char*)&records[i]->image.height, sizeof(int));
-		
+
 		outfile.write((char*)&nameSize, sizeof(int));
 		outfile.write((char*)&ageSize, sizeof(int));
 
@@ -68,48 +110,70 @@ void DataFile::Load(string filename)
 	recordCount = 0;
 	infile.read((char*)&recordCount, sizeof(int));
 
-	//basic idea create load record function, find total amount of records, if record is in range of total records then load that specific record.
-	//or that is dumb and i need to find a way to make the loading process faster for every piece in the data file.
-	//required: delete vector, only load the required record
-	//use Seekg for read move load function to real time/
-	for (int i = 0; i < recordCount; i++)
-	{		
-		int nameSize = 0;
-		int ageSize = 0;
-		int width = 0, height = 0, format = 0, imageSize = 0;
+	//get size total size of 1 record
+	//store that size as a value to use
 
-		infile.read((char*)&width, sizeof(int));
-		infile.read((char*)&height, sizeof(int));
 
-		imageSize = sizeof(Color) * width * height;
+	int nameSize = 0;
+	int ageSize = 0;
+	int width = 0, height = 0, imageSize = 0;
 
-		infile.read((char*)&nameSize, sizeof(int));
-		infile.read((char*)&ageSize, sizeof(int));
+	infile.read((char*)&width, sizeof(int));
+	infile.read((char*)&height, sizeof(int));
 
-		char* imgdata = new char[imageSize];
-		infile.read(imgdata, imageSize);
+	imageSize = sizeof(Color) * width * height;
 
-		Image img = LoadImageEx((Color*)imgdata, width, height);
-		//initialise character array as \0 values with one extra value to add the null value to cut the string off
-		char* name = new char[nameSize + 1] {};
-		int age = 0;
-				
-		infile.read((char*)name, nameSize);
-		infile.read((char*)&age, ageSize);
+	infile.read((char*)&nameSize, sizeof(int));
+	infile.read((char*)&ageSize, sizeof(int));
+	char* imgdata = new char[imageSize];
 
-		Record* r = new Record();
-		r->image = img;
-		r->name = string(name);
-		r->age = age;
-		records.push_back(r);
+	char* name = new char[nameSize + 1]{};
+	int age = 0;
 
-		delete [] imgdata;
-		delete [] name;
-	}
+	infile.read((char*)name, nameSize);
+	infile.read((char*)&age, ageSize);
+	sizeofrecord = nameSize + ageSize + imageSize + name + age + height + width;
+	//basic idea create loadrecord function, use load to load total amount of records, if record is in range of total records then load that specific record.
+	//required: delete vector, only load the required record this will fuck up save as well figure that out
+	//for (int i = 0; i < recordCount; i++) {
+
+	//	/*int nameSize = 0;
+	//	int ageSize = 0;
+	//	int width = 0, height = 0, imageSize = 0;
+
+	//	infile.read((char*)&width, sizeof(int));
+	//	infile.read((char*)&height, sizeof(int));
+
+	//	imageSize = sizeof(Color) * width * height;
+
+	//	infile.read((char*)&nameSize, sizeof(int));
+	//	infile.read((char*)&ageSize, sizeof(int));*/
+
+	//	char* imgdata = new char[imageSize];
+
+	//	infile.read(imgdata, imageSize);
+	//	Image img = LoadImageEx((Color*)imgdata, width, height);
+
+	//	//initialise character array as \0 values with one extra value to add the null value to cut the string off
+	//	char* name = new char[nameSize + 1]{};
+	//	int age = 0;
+
+	//	infile.read((char*)name, nameSize);
+	//	infile.read((char*)&age, ageSize);
+
+	//	Record* r = new Record();
+	//	r->image = img;
+	//	r->name = string(name);
+	//	r->age = age;
+	//	records.push_back(r);
+
+	//	delete[] imgdata;
+	//	delete[] name;
+	//}
 
 	infile.close();
 }
-
+//deletes each record to regain memory specae, then clears the vector records and sets the record count to 0
 void DataFile::Clear()
 {
 	for (int i = 0; i < records.size(); i++)
