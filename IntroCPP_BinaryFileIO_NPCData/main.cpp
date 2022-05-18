@@ -32,12 +32,10 @@ int main(int argc, char* argv[])
     InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
 
     DataFile data;
-    int currentRecordIdx = 0;
     int recordOffset = 0;
-
     data.Load("npc_data.dat");
 
-    DataFile::Record* currentRecord = data.GetRecord(currentRecordIdx, "npc_data.dat");
+    DataFile::Record* currentRecord = data.GetRecord(recordOffset, "npc_data.dat");
     Texture2D recordTexture = LoadTextureFromImage(currentRecord->image);
 
 
@@ -54,22 +52,31 @@ int main(int argc, char* argv[])
 
         if (IsKeyPressed(KEY_LEFT))
         {
+            //unload previous record
+            UnloadImage(currentRecord->image);
+            delete currentRecord;
+            UnloadTexture(recordTexture);
+            //change offset in direction
             recordOffset--;
             if (recordOffset < 0)
             {
+                //stops out of bounds exception
                 recordOffset = 0;
-                recordOffset = 0;
-            }
+            }            
             currentRecord = data.GetRecord(recordOffset, "npc_data.dat");
             recordTexture = LoadTextureFromImage(currentRecord->image);
         }
         //throwing out of range exception
-        if (IsKeyPressed(KEY_RIGHT))
+        if (IsKeyDown(KEY_RIGHT))
         {
+            //unload previous record
+            UnloadImage(currentRecord->image);
+            delete currentRecord;
+            UnloadTexture(recordTexture);
+            //change offset in direction
             recordOffset++;
             if (recordOffset >= data.GetRecordCount())
             {
-                recordOffset = data.GetRecordCount() - 1;
                 //stops out of bounds exception
                 recordOffset = data.GetRecordCount() - 1;
             }

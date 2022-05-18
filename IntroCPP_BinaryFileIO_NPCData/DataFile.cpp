@@ -27,20 +27,17 @@ void DataFile::AddRecord(string imageFilename, string name, int age)
 
 DataFile::Record* DataFile::GetRecord(int offset, string filename)
 {
-	//return records[offset];
-	
+		
 	//find total space that one record takes up,
 	//get index of the record
-	//offset by record multiplied by total space using seekg
-	//read file for things here-----------------
-
 	ifstream infile(filename, ios::binary);
 	int nameSize = 0;
 	int ageSize = 0;
 	int width = 0, height = 0, imageSize = 0;
-	offset *= sizeofrecord;
+	//offset gotten from record position vector
+	offset = recordposition[offset];
 
-	infile.seekg(offset + sizeof(recordCount), std::ios::beg);
+	infile.seekg(offset, std::ios::beg);
 
 	infile.read((char*)&width, sizeof(int));
 	infile.read((char*)&height, sizeof(int));
@@ -65,11 +62,10 @@ DataFile::Record* DataFile::GetRecord(int offset, string filename)
 	r->image = img;
 	r->name = string(name);
 	r->age = age;
-	return r;
-
 	delete[] imgdata;
 	delete[] name;
 	infile.close();
+	return r;
 }
 
 void DataFile::Save(string filename)
@@ -104,76 +100,45 @@ void DataFile::Save(string filename)
 void DataFile::Load(string filename)
 {
 	Clear();
-
-	ifstream infile(filename, ios::binary);
-
+	ifstream infile(filename, ios::binary);	
 	recordCount = 0;
 	infile.read((char*)&recordCount, sizeof(int));
 
-	//get size total size of 1 record
-	//store that size as a value to use
-
-
-	int nameSize = 0;
-	int ageSize = 0;
-	int width = 0, height = 0, imageSize = 0;
-
-	infile.read((char*)&width, sizeof(int));
-	infile.read((char*)&height, sizeof(int));
-
-	imageSize = sizeof(Color) * width * height;
-
-	infile.read((char*)&nameSize, sizeof(int));
-	infile.read((char*)&ageSize, sizeof(int));
-	char* imgdata = new char[imageSize];
-
-	char* name = new char[nameSize + 1]{};
-	int age = 0;
-
-	infile.read((char*)name, nameSize);
-	infile.read((char*)&age, ageSize);
-	sizeofrecord = nameSize + ageSize + imageSize + name + age + height + width;
 	//basic idea create loadrecord function, use load to load total amount of records, if record is in range of total records then load that specific record.
-	//required: delete vector, only load the required record this will fuck up save as well figure that out
-	//for (int i = 0; i < recordCount; i++) {
+	for (int i = 0; i < recordCount; i++) {
 
-	//	/*int nameSize = 0;
-	//	int ageSize = 0;
-	//	int width = 0, height = 0, imageSize = 0;
+		int recordstart = 0;
+		recordstart = infile.tellg();
+		int nameSize = 0;
+		int ageSize = 0;
+		int width = 0, height = 0, imageSize = 0;		
+		
+		recordposition.push_back(recordstart);
+		infile.read((char*)&width, sizeof(int));
+		infile.read((char*)&height, sizeof(int));
 
-	//	infile.read((char*)&width, sizeof(int));
-	//	infile.read((char*)&height, sizeof(int));
+		imageSize = sizeof(Color) * width * height;
 
-	//	imageSize = sizeof(Color) * width * height;
+		infile.read((char*)&nameSize, sizeof(int));
+		infile.read((char*)&ageSize, sizeof(int));
 
-	//	infile.read((char*)&nameSize, sizeof(int));
-	//	infile.read((char*)&ageSize, sizeof(int));*/
+		char* imgdata = new char[imageSize];
 
-	//	char* imgdata = new char[imageSize];
+		infile.read(imgdata, imageSize);
 
-	//	infile.read(imgdata, imageSize);
-	//	Image img = LoadImageEx((Color*)imgdata, width, height);
+		//initialise character array as \0 values with one extra value to add the null value to cut the string off
+		char* name = new char[nameSize + 1]{};
+		int age = 0;
 
-	//	//initialise character array as \0 values with one extra value to add the null value to cut the string off
-	//	char* name = new char[nameSize + 1]{};
-	//	int age = 0;
+		infile.read((char*)name, nameSize);
+		infile.read((char*)&age, ageSize);		
 
-	//	infile.read((char*)name, nameSize);
-	//	infile.read((char*)&age, ageSize);
-
-	//	Record* r = new Record();
-	//	r->image = img;
-	//	r->name = string(name);
-	//	r->age = age;
-	//	records.push_back(r);
-
-	//	delete[] imgdata;
-	//	delete[] name;
-	//}
-
+		delete[] imgdata;
+		delete[] name;
+	}
 	infile.close();
 }
-//deletes each record to regain memory specae, then clears the vector records and sets the record count to 0
+//deletes each record to regain memory space, then clears the vector records and sets the record count to 0
 void DataFile::Clear()
 {
 	for (int i = 0; i < records.size(); i++)
