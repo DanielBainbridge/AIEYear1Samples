@@ -17,7 +17,7 @@ public:
 
 private:
 	int recordCount;
-	std::vector<Record*> records;	// delete this vector. this vector used to save not to load.
+	std::vector<Record*> records;	//this vector used to save not to load.
 	std::vector<int> recordposition;
 	std::streamsize sizeofrecord;
 
