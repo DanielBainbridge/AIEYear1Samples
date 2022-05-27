@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
             recordTexture = LoadTextureFromImage(currentRecord->image);
         }
         //throwing out of range exception
-        if (IsKeyDown(KEY_RIGHT))
+        if (IsKeyPressed(KEY_RIGHT))
         {
             //unload previous record
             UnloadImage(currentRecord->image);
