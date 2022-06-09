@@ -40,10 +40,10 @@ int main(int argc, char* argv[])
     srand(time(NULL));
 
 
-    Critter critters[1000]; 
 
+    Critter critters[1000]; 
     // create some critters
-    const int CRITTER_COUNT = 50;
+    const int CRITTER_COUNT = 1;
     const int MAX_VELOCITY = 80;
 
     for (int i = 0; i < CRITTER_COUNT; i++)
@@ -76,7 +76,6 @@ int main(int argc, char* argv[])
         //----------------------------------------------------------------------------------
         // TODO: Update your variables here
         //----------------------------------------------------------------------------------
-
         float delta = GetFrameTime();
 
         // update the destroyer

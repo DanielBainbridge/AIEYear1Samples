@@ -49,5 +49,5 @@ void Critter::Draw()
 	if (m_isLoaded == false)
 		return;
 
-	DrawTexture(m_texture, m_position.x, m_position.y, WHITE);
+	DrawTexture(m_texture, m_position.x - m_texture.width /2.0f, m_position.y - m_texture.height / 2.0f, WHITE);
 }
