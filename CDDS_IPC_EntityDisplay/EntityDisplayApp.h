@@ -25,7 +25,8 @@ public:
 protected:
 	int m_screenWidth;
 	int m_screenHeight;
-
+	HANDLE h = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, L"SharedEntities");
 	// an array of an unknown number of entities
-	std::vector<Entity> m_entities;
+	//this broke fix it
+	std::vector<Entity> m_entities = MapViewOfFile(h, FILE_MAP_READ, 0, 0, sizeof(Entity));
 };

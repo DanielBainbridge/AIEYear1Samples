@@ -27,8 +27,9 @@ protected:
 	int m_screenHeight;
 
 	// define a block of entities that should be shared
-	enum { ENTITY_COUNT = 10 };
+	HANDLE h = CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, sizeof(ENTITY_COUNT) + sizeof(m_entities), L"SharedEntities");
+	//send over the size of entities and each entity
+	enum { ENTITY_COUNT = 500 };
 	Entity m_entities[ENTITY_COUNT];
 
-	HANDLE h;
 };
