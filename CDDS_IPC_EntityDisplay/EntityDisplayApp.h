@@ -11,7 +11,7 @@ struct Entity {
 	float size = 1;
 };
 
-class EntityDisplayApp  {
+class EntityDisplayApp {
 public:
 	EntityDisplayApp(int screenWidth = 800, int screenHeight = 450);
 	~EntityDisplayApp();
@@ -28,5 +28,7 @@ protected:
 	HANDLE h = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, L"SharedEntities");
 	// an array of an unknown number of entities
 	//this broke fix it
-	std::vector<Entity> m_entities = MapViewOfFile(h, FILE_MAP_READ, 0, 0, sizeof(Entity));
+	int ENT_COUNT;
+	Entity* m_entities;
+
 };

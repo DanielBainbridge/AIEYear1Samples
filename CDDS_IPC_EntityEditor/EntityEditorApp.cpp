@@ -1,6 +1,7 @@
 #include "EntityEditorApp.h"
 #include <random>
 #include <time.h>
+#include <iostream>
 
 #define RAYGUI_IMPLEMENTATION
 #define RAYGUI_SUPPORT_ICONS
@@ -19,7 +20,10 @@ bool EntityEditorApp::Startup() {
 
 	InitWindow(m_screenWidth, m_screenHeight, "EntityDisplayApp");
 	SetTargetFPS(60);
-
+	h = CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, sizeof(ENTITY_COUNT) + sizeof(m_entities), L"SharedEntities");
+	std::cout << sizeof(h)<< std::endl;
+	int* entitiesptr = (int*)MapViewOfFile(h, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(ENTITY_COUNT));
+	*entitiesptr = ENTITY_COUNT;
 	srand(time(nullptr));
 	for (auto& entity : m_entities) {
 		entity.x = rand()%m_screenWidth;
@@ -31,12 +35,14 @@ bool EntityEditorApp::Startup() {
 		entity.g = rand() % 255;
 		entity.b = rand() % 255;
 	}
+	//const int* entitiesptr = (const int*)MapViewOfFile(h, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(ENTITY_COUNT));
 	
 	return true;
 }
 
 void EntityEditorApp::Shutdown() {
 
+	UnmapViewOfFile(h);
 	CloseWindow();        // Close window and OpenGL context
 }
 
