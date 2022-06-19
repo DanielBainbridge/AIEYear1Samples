@@ -29,8 +29,8 @@ protected:
 	// define a block of entities that should be shared
 	HANDLE h;
 	//send over the size of entities and each entity
-	
-	//enum { ENTITY_COUNT = 500 } = CreateFileMapping(h, nullptr, PAGE_READWRITE, 0, sizeof(ENTITY_COUNT), L"SharedEntities")
-	static const int ENTITY_COUNT = 500;
-	Entity m_entities[ENTITY_COUNT];
+
+	enum { ENTITY_COUNT = 75 };
+	int* m_count;
+	Entity* m_entities;
 };

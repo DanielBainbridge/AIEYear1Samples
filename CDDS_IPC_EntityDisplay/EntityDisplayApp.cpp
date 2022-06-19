@@ -14,35 +14,20 @@ bool EntityDisplayApp::Startup() {
 	SetTargetFPS(60);
 
 	//reads handle of assigned memory from another program 'h' to get the size of the array
-	int* sizetempptr = (int*)MapViewOfFile(h, FILE_MAP_READ, 0, 0, sizeof(int));
+	sizetempptr = (int*)MapViewOfFile(h, FILE_MAP_READ, 0, 0, sizeof(int));
 	//assigns 
 	ENT_COUNT = *sizetempptr;
 	//unmaps
 	UnmapViewOfFile(h);
-	int blah =  sizeof(Entity)* ENT_COUNT;
-	std::cout << blah << std::endl;
 
 	//reads handle of assigned memory from another program 'h' includes array in read this time
 	int* startmemptr = (int*)MapViewOfFile(h, FILE_MAP_READ, 0, 0, sizeof(int) + (sizeof(Entity) * ENT_COUNT));
-	GetLastError();
 	startmemptr++;
 
-	//intention, initialise array of "Entity" after moving the pointer past the size of the array
-	m_entities = (Entity*)startmemptr;
+	Entity* entptr = (Entity*)startmemptr;
+	//initialise array of "Entity" after moving the pointer past the size of the array
+	m_entities = entptr;
 
-	//what is happening: MapViewFile() is reading the memory and setting m_entities to zero?
-	//the correct amount of information is being read 12000 bytes.
-	//it jumps the 4 bites as intedend
-
-	//const int size = ENT_COUNT;
-	//new Entity[size];
-	//(Entity*)startmemptr;
-	/*for (int i = 0; i < ENT_COUNT; i++)
-	{
-		Entity* tmpentptr = (Entity*)MapViewOfFile(h, FILE_MAP_READ, 0, 0, sizeof(Entity));
-
-		m_entities[i] = *tmpentptr;
-	}*/
 	return true;
 }
 

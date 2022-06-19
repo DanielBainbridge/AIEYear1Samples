@@ -13,30 +13,37 @@ EntityEditorApp::EntityEditorApp(int screenWidth, int screenHeight) : m_screenWi
 }
 
 EntityEditorApp::~EntityEditorApp() {
-	
+
 }
 
 bool EntityEditorApp::Startup() {
 
 	InitWindow(m_screenWidth, m_screenHeight, "EntityDisplayApp");
 	SetTargetFPS(60);
-	h = CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, sizeof(ENTITY_COUNT) + sizeof(m_entities), L"SharedEntities");
-	std::cout << sizeof(h)<< std::endl;
-	int* entitiesptr = (int*)MapViewOfFile(h, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(ENTITY_COUNT));
-	*entitiesptr = ENTITY_COUNT;
+
+	h = CreateFileMapping(INVALID_HANDLE_VALUE,
+		nullptr,
+		PAGE_READWRITE,
+		0, sizeof(int) + (sizeof(Entity) * ENTITY_COUNT), L"SharedEntities");
+
+	m_count = (int*)MapViewOfFile(h, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(int) + (sizeof(Entity) * ENTITY_COUNT));
+
+	*m_count = ENTITY_COUNT;
+	m_entities = (Entity*)(m_count + 1);
 	srand(time(nullptr));
-	for (auto& entity : m_entities) {
-		entity.x = rand()%m_screenWidth;
-		entity.y = rand()%m_screenHeight;
-		entity.size = 10;
-		entity.speed = rand() % 100;
-		entity.rotation = rand() % 360;
-		entity.r = rand() % 255;
-		entity.g = rand() % 255;
-		entity.b = rand() % 255;
+	for (int i = 0; i < ENTITY_COUNT; i++) {
+		m_entities[i].x = rand() % m_screenWidth;
+		m_entities[i].y = rand() % m_screenHeight;
+		m_entities[i].size = 10;
+		m_entities[i].speed = rand() % 100;
+		m_entities[i].rotation = rand() % 360;
+		m_entities[i].r = rand() % 255;
+		m_entities[i].g = rand() % 255;
+		m_entities[i].b = rand() % 255;
 	}
-	//const int* entitiesptr = (const int*)MapViewOfFile(h, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(ENTITY_COUNT));
-	
+	/*
+	Entity* entitiesptr = (Entity*)MapViewOfFile(h, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(m_entities));
+	entitiesptr = m_entities;*/
 	return true;
 }
 
@@ -47,7 +54,7 @@ void EntityEditorApp::Shutdown() {
 }
 
 void EntityEditorApp::Update(float deltaTime) {
-	
+
 
 	// select an entity to edit
 	static int selection = 0;
@@ -60,9 +67,9 @@ void EntityEditorApp::Update(float deltaTime) {
 	static Color colorPickerValue = WHITE;
 
 
-	if (GuiSpinner(Rectangle{ 90, 25, 125, 25 }, "Entity", &selection, 0, ENTITY_COUNT-1, selectionEditMode)) selectionEditMode = !selectionEditMode;
-	
-	int intX = (int)m_entities[selection].x;	
+	if (GuiSpinner(Rectangle{ 90, 25, 125, 25 }, "Entity", &selection, 0, ENTITY_COUNT - 1, selectionEditMode)) selectionEditMode = !selectionEditMode;
+
+	int intX = (int)m_entities[selection].x;
 	int intY = (int)m_entities[selection].y;
 	int intRotation = (int)m_entities[selection].rotation;
 	int intSize = (int)m_entities[selection].size;
@@ -81,7 +88,7 @@ void EntityEditorApp::Update(float deltaTime) {
 	m_entities[selection].rotation = GuiSlider(Rectangle{ 90, 150, 125, 25 }, "rotation", TextFormat("%2.2f", m_entities[selection].rotation), m_entities[selection].rotation, 0, 360);
 	m_entities[selection].size = GuiSlider(Rectangle{ 90, 180, 125, 25 }, "size", TextFormat("%2.2f", m_entities[selection].size), m_entities[selection].size, 0, 100);
 	m_entities[selection].speed = GuiSlider(Rectangle{ 90, 210, 125, 25 }, "speed", TextFormat("%2.2f", m_entities[selection].speed), m_entities[selection].speed, 0, 100);
-	
+
 	colorPickerValue = GuiColorPicker(Rectangle{ 260, 90, 156, 162 }, Color{ m_entities[selection].r, m_entities[selection].g, m_entities[selection].b });
 	m_entities[selection].r = colorPickerValue.r;
 	m_entities[selection].g = colorPickerValue.g;
@@ -90,8 +97,8 @@ void EntityEditorApp::Update(float deltaTime) {
 
 	// move entities
 
-	for (int i=0; i<ENTITY_COUNT; i++) {
-		if(selection == i)
+	for (int i = 0; i < ENTITY_COUNT; i++) {
+		if (selection == i)
 			continue;
 
 		float s = sinf(m_entities[i].rotation) * m_entities[i].speed;
@@ -115,12 +122,12 @@ void EntityEditorApp::Draw() {
 	ClearBackground(RAYWHITE);
 
 	// draw entities
-	for (auto& entity : m_entities) {
+	for (int i = 0; i < ENTITY_COUNT; i++) {
 		DrawRectanglePro(
-			Rectangle{ entity.x, entity.y, entity.size, entity.size }, // rectangle
-			Vector2{ entity.size / 2, entity.size / 2 }, // origin
-			entity.rotation,
-			Color{ entity.r, entity.g, entity.b, 255 });
+			Rectangle{ m_entities[i].x, m_entities[i].y, m_entities[i].size, m_entities[i].size }, // rectangle
+			Vector2{ m_entities[i].size / 2, m_entities[i].size / 2 }, // origin
+			m_entities[i].rotation,
+			Color{ m_entities[i].r, m_entities[i].g, m_entities[i].b, 255 });
 	}
 
 	// output some text, uses the last used colour

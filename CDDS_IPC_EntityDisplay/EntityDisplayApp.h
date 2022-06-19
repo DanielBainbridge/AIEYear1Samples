@@ -21,14 +21,12 @@ public:
 
 	void Update(float deltaTime);
 	void Draw();
+	int* sizetempptr;
 
 protected:
 	int m_screenWidth;
 	int m_screenHeight;
 	HANDLE h = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, L"SharedEntities");
-	// an array of an unknown number of entities
-	//this broke fix it
 	int ENT_COUNT;
 	Entity* m_entities;
-
 };
