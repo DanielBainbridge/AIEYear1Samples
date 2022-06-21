@@ -19,8 +19,7 @@ public:
 	Critter();
 	~Critter();
 
-	void Init(Vector2 position, Vector2 velocity, float radius, const char* texture);
-	void Destroy();
+	void Init(Vector2 position, Vector2 velocity, float radius, Texture2D texture);
 	void Update(float dt);
 	void Draw();
 
