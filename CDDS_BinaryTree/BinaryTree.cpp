@@ -34,7 +34,35 @@ bool BinaryTree::IsEmpty() const
 // Smaller elements are placed to the left, larger onces are placed to the right.
 void BinaryTree::Insert(int a_nValue)
 {
-	
+	//step 1 insert at the Root if there is no root
+	TreeNode* toInsert = new TreeNode(a_nValue);
+	if (IsEmpty()) {
+		m_pRoot = toInsert;
+		return;
+	}
+
+	//step 2 if there is a root, compare the new node value to the root value,
+	// if it is low move to left node if higher move to right,
+	//if that position is nullptr, insert node,
+	//if not repeat check for left and right
+	TreeNode* currentNode = m_pRoot;
+	while (currentNode != toInsert){
+		if (currentNode->GetData() == toInsert->GetData())	{
+			break;
+		}
+		if (toInsert->GetData() >= currentNode->GetData()) {
+			if (currentNode->GetRight() == nullptr) {
+				currentNode->SetRight(toInsert);
+			}
+			else currentNode = currentNode->GetRight();
+		}
+		else {
+			if (currentNode->GetLeft() == nullptr) {
+				currentNode->SetLeft(toInsert);
+			}
+			else currentNode;
+		}
+	}
 }
 
 TreeNode* BinaryTree::Find(int a_nValue)
@@ -47,6 +75,11 @@ TreeNode* BinaryTree::Find(int a_nValue)
 
 bool BinaryTree::FindNode(int a_nSearchValue, TreeNode*& ppOutNode, TreeNode*& ppOutParent)
 {
+	TreeNode* currentNode = m_pRoot;
+	TreeNode currentNode = TreeNode(a_nSearchValue);
+	while (currentNode != ) {
+
+	}
 
 
 	return false;
