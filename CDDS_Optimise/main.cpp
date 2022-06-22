@@ -28,6 +28,7 @@
 #include "Link_List.h"
 #include <cstring>
 #include <string>
+#include <iostream>
 
 int main(int argc, char* argv[])
 {
@@ -47,14 +48,19 @@ int main(int argc, char* argv[])
 	//critter cpp  needs to know hash table
 
 	// create some critters
-	const int CRITTER_COUNT = 10;
-	Critter critters[CRITTER_COUNT];
-	const int MAX_VELOCITY = 200;
+	const int CRITTER_COUNT = 20;
+	const int MAX_VELOCITY = 80;
 	HashTable hTable;
 	hTable.AddValue("res/10.png");
 	hTable.AddValue("res/9.png");
 	LinkedList<Critter*> enemyAlive = LinkedList<Critter*>();
 	LinkedList<Critter*> enemyDead = LinkedList<Critter*>();
+
+	LinkedList<int> intlist = LinkedList<int>();
+
+	for (auto i : intlist) {
+		std::cout << i << std::endl;
+	}
 
 
 	for (int i = 0; i < CRITTER_COUNT; i++)
@@ -88,97 +94,64 @@ int main(int argc, char* argv[])
 		//----------------------------------------------------------------------------------
 
 		float delta = GetFrameTime();
-		
+
 		destroyer.Update(delta);
-		for (auto critter : enemyAlive) {
-			critter->Update(delta);
-			float dist = Vector2Distance(critter->GetPosition(), destroyer.GetPosition());
-			if (dist < critter->GetRadius() + destroyer.GetRadius())
-			{
-				enemyDead.pushBack(critter);
+		for (auto i = enemyAlive.begin(); i != enemyAlive.end(); i++) {
+			(*i)->Update(delta);
+			float dist = Vector2Distance((*i)->GetPosition(), destroyer.GetPosition());
+			if (dist < (*i)->GetRadius() + destroyer.GetRadius()) {
+				enemyDead.pushBack((*i));
+				std::cout << "added to dead list" << std::endl;
+				i = enemyAlive.erase(enemyAlive.find((*i)));
+				std::cout << "erased from alive" << std::endl;
 				continue;
 			}
-		}
-		for (auto critterToRemove : enemyDead)
-		{
-			for (auto critter : enemyAlive)
-			{
-				if (critterToRemove == critter)
-				{
-					enemyAlive.erase(enemyAlive.find(critter));
-					break;
-				}
-			}
-		}
+			for (auto j = enemyAlive.begin(); j != enemyAlive.end(); j++)
+			{			
+				if (i == j || (*i)->IsDirty())continue;
 
-
-		for (int i = 0; i < enemyAlive.m_count; i++)
-		{
-			for (int j = 0; j < enemyAlive.m_count; j++)
-			{
-				if (i == j || enemyAlive[i].value->IsDirty())continue;
-
-				float dist = Vector2Distance(enemyAlive[i].value->GetPosition(), enemyAlive[j].value->GetPosition());
-				if (dist < critters[i].GetRadius() + critters[j].GetRadius())
+				float dist = Vector2Distance((*i)->GetPosition(), (*j)->GetPosition());
+				if (dist < (*i)->GetRadius() + (*j)->GetRadius())
 				{
 					// collision!
 					// do math to get critters bouncing
-					Vector2 normal = Vector2Normalize(Vector2Subtract(critters[j].GetPosition(), critters[i].GetPosition()));
+					Vector2 normal = Vector2Normalize(Vector2Subtract((*j)->GetPosition(), (*i)->GetPosition()));
 
 					// not even close to real physics, but fine for our needs
-					enemyAlive[i].value->SetVelocity(Vector2Scale(normal, -MAX_VELOCITY));
+					(*i)->SetVelocity(Vector2Scale(normal, -MAX_VELOCITY));
 					// set the critter to *dirty* so we know not to process any more collisions on it
-					critters[i].SetDirty();
+					(*j)->SetDirty();
 
 					// we still want to check for collisions in the case where 1 critter is dirty - so we need a check 
 					// to make sure the other critter is clean before we do the collision response
-					if (!enemyAlive[j].value->IsDirty()) {
-						enemyAlive[j].value->SetVelocity(Vector2Scale(normal, MAX_VELOCITY));
-						enemyAlive[j].value->SetDirty();
+					if (!(*j)->IsDirty()) {
+						(*j)->SetVelocity(Vector2Scale(normal, MAX_VELOCITY));
+						(*j)->SetDirty();
 					}
 					break;
 				}
 			}
 		}
+		for (auto i = enemyAlive.begin(); i != enemyAlive.end(); i++)
+		{
+		}
 
-		//// check for critter-on-critter collisions
-		//for (int i = 0; i < CRITTER_COUNT; i++)
-		//{
-		//	for (int j = 0; j < CRITTER_COUNT; j++) {
-		//		if (i == j || critters[i].IsDirty()) // note: the other critter (j) could be dirty - that's OK
-		//			continue;
-		//		// check every critter against every other critter
-		//		float dist = Vector2Distance(critters[i].GetPosition(), critters[j].GetPosition());
-		//		if (dist < critters[i].GetRadius() + critters[j].GetRadius())
-		//		{
-		//			// collision!
-		//			// do math to get critters bouncing
-		//			Vector2 normal = Vector2Normalize(Vector2Subtract(critters[j].GetPosition(), critters[i].GetPosition()));
 
-		//			// not even close to real physics, but fine for our needs
-		//			critters[i].SetVelocity(Vector2Scale(normal, -MAX_VELOCITY));
-		//			// set the critter to *dirty* so we know not to process any more collisions on it
-		//			critters[i].SetDirty();
-
-		//			// we still want to check for collisions in the case where 1 critter is dirty - so we need a check 
-		//			// to make sure the other critter is clean before we do the collision response
-		//			if (!critters[j].IsDirty()) {
-		//				critters[j].SetVelocity(Vector2Scale(normal, MAX_VELOCITY));
-		//				critters[j].SetDirty();
-		//			}
-		//			break;
-		//		}
-		//	}
-		//}
 
 		timer -= delta;
 
 		if (timer <= 0)
 		{
-			timer = 1;		
+			timer = 1;
 			if (enemyDead.m_count > 0)
 			{
-				Critter* respawnCritter = enemyDead[0].value;
+				if (enemyDead.m_count > 10)
+				{
+					std::cout << "ahhh" << std::endl;
+				}
+				if (enemyDead.begin() != nullptr)
+				{
+					Critter* respawnCritter = *enemyDead.begin();
 					Vector2 normal = Vector2Normalize(destroyer.GetVelocity());
 
 					// get a position behind the destroyer, and far enough away that the critter won't bump into it again
@@ -186,16 +159,14 @@ int main(int argc, char* argv[])
 					pos = Vector2Add(pos, Vector2Scale(normal, -50));
 					// its pretty ineficient to keep reloading textures. ...if only there was something else we could do
 					respawnCritter->Init(pos, Vector2Scale(normal, -MAX_VELOCITY), 12, hTable["res/10.png"]);
-					enemyAlive.pushBack(respawnCritter);
 					enemyDead.popFront();
-			}			
+					enemyAlive.pushBack(respawnCritter);
+					std::cout << "alive again!" << std::endl;
+				}
+			}
 			nextSpawnPos = destroyer.GetPosition();
 		}
 
-		if (enemyDead.m_count > 10)
-		{
-			enemyDead.pushBack(&destroyer);
-		}
 		// Draw
 		//----------------------------------------------------------------------------------
 		BeginDrawing();

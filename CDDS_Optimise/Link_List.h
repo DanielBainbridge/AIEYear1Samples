@@ -22,6 +22,7 @@ public:
 		using value_type = T;
 		using pointer = T*;
 		using reference = T&;
+
 		Node<T>* currentNode;
 		NodeIterator(Node<T>* ptr)
 			: currentNode(ptr) {}
@@ -68,14 +69,6 @@ public:
 		delete tail;
 	}
 
-	Node<T> operator[](int it) {
-		auto tmp = head;
-		for (int i = 0; i != it; i++)
-		{
-			tmp = tmp->next;
-		}
-		return *tmp;
-	}
 
 	// adds value at the head of the list
 	void pushFront(T value) {
@@ -99,6 +92,7 @@ public:
 		tail = newEnd;
 		m_count++;
 	}
+
 	// adds a value at a specified space in the list
 	void insert(NodeIterator space, T value) {
 		Node<T>* newInsert = new Node{ value, space.currentNode, space.currentNode->next };
@@ -108,7 +102,11 @@ public:
 	}
 	// return the iterator to the first element
 	NodeIterator begin() {
-		return NodeIterator(head);
+		if (head != nullptr)
+		{
+			return NodeIterator(head);
+		}
+		else return NodeIterator(nullptr);
 	}
 	// return the iterator to the last element
 	NodeIterator end() {
@@ -131,7 +129,7 @@ public:
 		return m_count;
 	}
 	// remove an element by its iterator
-	void erase(NodeIterator toErase) {
+	NodeIterator erase(NodeIterator toErase) {
 		if (toErase.currentNode->previous == nullptr) {
 			head = toErase.currentNode->next;
 			if (head != nullptr) {
@@ -150,8 +148,11 @@ public:
 		else {
 			toErase.currentNode->next->previous = toErase.currentNode->previous;
 		}
+		NodeIterator next = toErase;
+		next++;
 		delete toErase.currentNode;
 		m_count--;
+		return next;
 	}
 	//  remove an elements matching this value
 	void remove(T value) {
@@ -175,10 +176,12 @@ public:
 			if (head->next != nullptr) {
 				head = head->next;
 				head->previous = nullptr;
-				delete oldHead;
 			}
-			else head = nullptr;
+			else {
+				head = nullptr; tail = nullptr;
+			}
 			m_count--;
+			delete oldHead;
 		}
 	}
 	// remove the last element
@@ -188,10 +191,12 @@ public:
 			if (tail->previous != nullptr) {
 				tail = tail->previous;
 				tail->next = nullptr;
-				delete oldTail;
 			}
-			else tail = nullptr;
+			else {
+				head = nullptr; tail = nullptr;
+			}
 			m_count--;
+			delete oldTail;
 		}
 	}
 	// returns true if the list is empty
